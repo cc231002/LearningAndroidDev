@@ -30,4 +30,17 @@ class TripViewModel @Inject constructor(
     fun getTripById(tripId: Int): Flow<Trip?> {
         return tripDao.getTripById(tripId)
     }
+    fun updateTrip(trip: Trip) {
+        viewModelScope.launch {
+            tripDao.update(trip)
+        }
+    }
+
+    // Function to delete a trip from the database
+    fun deleteTrip(trip: Trip) {
+        viewModelScope.launch {
+            tripDao.delete(trip)
+        }
+    }
+
 }

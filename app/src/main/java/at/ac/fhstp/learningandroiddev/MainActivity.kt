@@ -61,6 +61,12 @@ fun NavigationApp(tripViewModel: TripViewModel) {
                 TripDetailScreen(tripId = tripId, navController = navController, viewModel = tripViewModel)
             }
         }
+        composable("editTrip/{tripId}") { backStackEntry ->
+            val tripId = backStackEntry.arguments?.getString("tripId")?.toIntOrNull()
+            if (tripId != null) {
+                EditTripScreen(tripId = tripId, navController = navController, viewModel = tripViewModel)
+            }
+        }
         composable("addTrip") {
             AddTripScreen(
                 navController = navController,
@@ -179,7 +185,6 @@ fun AddTripScreen(
         }
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TripDetailScreen(
@@ -209,7 +214,30 @@ fun TripDetailScreen(
                     .padding(16.dp)
             ) {
                 Text(text = "Trip Name: ${trip.name}", style = MaterialTheme.typography.headlineMedium)
-                // Additional UI for expenses, participants, etc.
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Edit Button
+                Button(
+                    onClick = { navController.navigate("editTrip/${trip.id}") },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Edit Trip")
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Delete Button
+                Button(
+                    onClick = {
+                        viewModel.deleteTrip(trip)
+                        navController.navigateUp() // Navigate back after deleting
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Delete Trip")
+                }
             }
         } else {
             Box(
@@ -217,6 +245,60 @@ fun TripDetailScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text("Trip not found")
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EditTripScreen(
+    tripId: Int,
+    navController: NavController,
+    viewModel: TripViewModel
+) {
+    val trip = viewModel.getTripById(tripId).collectAsState(initial = null).value
+    var tripName by remember { mutableStateOf(trip?.name ?: "") }
+
+    if (trip != null) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Edit Trip") },
+                    navigationIcon = {
+                        IconButton(onClick = { navController.navigateUp() }) {
+                            Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    }
+                )
+            }
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp)
+            ) {
+                OutlinedTextField(
+                    value = tripName,
+                    onValueChange = { tripName = it },
+                    label = { Text("Trip Name") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = {
+                        if (tripName.isNotBlank()) {
+                            viewModel.updateTrip(trip.copy(name = tripName)) // Update trip in the database
+                            navController.navigateUp() // Navigate back after updating
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Update Trip")
+                }
             }
         }
     }
