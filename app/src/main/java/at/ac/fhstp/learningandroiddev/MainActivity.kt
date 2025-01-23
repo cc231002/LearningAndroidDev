@@ -193,6 +193,7 @@ fun TripDetailScreen(
     viewModel: TripViewModel
 ) {
     val trip = viewModel.getTripById(tripId).collectAsState(initial = null).value
+    val participants = viewModel.getParticipantsByTripId(tripId).collectAsState(initial = emptyList()).value
 
     Scaffold(
         topBar = {
@@ -217,26 +218,17 @@ fun TripDetailScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Edit Button
-                Button(
-                    onClick = { navController.navigate("editTrip/${trip.id}") },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Edit Trip")
-                }
+                Text(text = "Participants:", style = MaterialTheme.typography.bodyLarge)
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Delete Button
-                Button(
-                    onClick = {
-                        viewModel.deleteTrip(trip)
-                        navController.navigateUp() // Navigate back after deleting
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Delete Trip")
+                // Display participants
+                LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                    items(participants) { participant ->
+                        Text(
+                            text = participant.name,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        )
+                    }
                 }
             }
         } else {
@@ -249,6 +241,7 @@ fun TripDetailScreen(
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

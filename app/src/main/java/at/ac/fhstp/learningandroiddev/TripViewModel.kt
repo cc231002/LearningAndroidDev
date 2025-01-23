@@ -2,6 +2,8 @@ package at.ac.fhstp.learningandroiddev
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import at.ac.fhstp.learningandroiddev.data.Participant
+import at.ac.fhstp.learningandroiddev.data.ParticipantDao
 import at.ac.fhstp.learningandroiddev.data.Trip
 import at.ac.fhstp.learningandroiddev.data.TripDao
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,7 +13,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TripViewModel @Inject constructor(
-    private val tripDao: TripDao
+    private val tripDao: TripDao,
+    private val participantDao: ParticipantDao // Inject ParticipantDao
 ) : ViewModel() {
 
     // Function to insert a new trip into the database
@@ -30,6 +33,13 @@ class TripViewModel @Inject constructor(
     fun getTripById(tripId: Int): Flow<Trip?> {
         return tripDao.getTripById(tripId)
     }
+
+    // Function to fetch participants for a given trip
+    fun getParticipantsByTripId(tripId: Int): Flow<List<Participant>> {
+        return participantDao.getParticipantsByTripId(tripId)
+    }
+
+    // Function to update an existing trip
     fun updateTrip(trip: Trip) {
         viewModelScope.launch {
             tripDao.update(trip)
@@ -42,5 +52,5 @@ class TripViewModel @Inject constructor(
             tripDao.delete(trip)
         }
     }
-
 }
+
